@@ -1,0 +1,11 @@
+name: Manually Deploy 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+        with:
+          usedocker: true
+          stack: "container"
+          region: "eu"
+        env:
+          production_environment: true
