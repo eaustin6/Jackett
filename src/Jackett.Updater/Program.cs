@@ -261,9 +261,10 @@ namespace Jackett.Updater
                 "Definitions/angietorrents.yml",
                 "Definitions/academictorrents.yml",
                 "Definitions/alein.yml",
+                "Definitions/aither.yml", // switch to *-API #8682
                 "Definitions/alexfilm.yml",
-                "Definitions/alleenretail.yml",
                 "Definitions/anidex.yml", // migrated to C#
+                "Definitions/animeworld.yml", // switch to *-API #8682
                 "Definitions/aox.yml",
                 "Definitions/apollo.yml", // migrated to C# gazelle base tracker
                 "Definitions/archetorrent.yml",
@@ -281,7 +282,9 @@ namespace Jackett.Updater
                 "Definitions/bitme.yml",
                 "Definitions/bittorrentam.yml",
                 "Definitions/blubits.yml",
+                "Definitions/blutopia.yml", // switch to *-API #8682
                 "Definitions/brobits.yml",
+                "Definitions/brsociety.yml", // switch to *-API #8682
                 "Definitions/bt-scene.yml",
                 "Definitions/btbit.yml",
                 "Definitions/btdb.yml",
@@ -302,8 +305,10 @@ namespace Jackett.Updater
                 "Definitions/darmowetorenty.yml", // migrated to C#
                 "Definitions/danishbytes.yml", // migrated to C#
                 "Definitions/DasUnerwartete.yml",
+                "Definitions/datascene.yml", // switch to *-API #8682
                 "Definitions/demonsite.yml",
                 "Definitions/desireleasers.yml",
+                "Definitions/desitorrents.yml", // switch to *-API #8682
                 "Definitions/devils-playground.yml",
                 "Definitions/devilsplayground.yml",
                 "Definitions/digbt.yml",
@@ -409,6 +414,7 @@ namespace Jackett.Updater
                 "Definitions/onlineselfeducation.yml",
                 "Definitions/onlyscene.yml",
                 "Definitions/obscure.yml",
+                "Definitions/oncesearch.yml",
                 "Definitions/passionetorrent.yml",
                 "Definitions/pleasuredome.yml",
                 "Definitions/polishtracker.yml",
@@ -418,6 +424,7 @@ namespace Jackett.Updater
                 "Definitions/rapidetracker.yml",
                 "Definitions/rarbg.yml", // migrated to C#
                 "Definitions/redtopia.yml",
+                "Definitions/reelflix.yml", // switch to *-API #8682
                 "Definitions/renegade.yml",
                 "Definitions/retroflix.yml", // migrated to C#
                 "Definitions/rgu.yml",
@@ -434,11 +441,13 @@ namespace Jackett.Updater
                 "Definitions/secretcinema.yml", // migrated to C# gazelle base tracker
                 "Definitions/seedpeer.yml",
                 "Definitions/sharefiles.yml",
+                "Definitions/shareisland.yml", // switch to *-API #8682
                 "Definitions/sharespacedb.yml",
                 "Definitions/shareuniversity.yml",
                 "Definitions/sharingue.yml",
                 "Definitions/shellife.yml",
                 "Definitions/shokweb.yml",
+                "Definitions/skipthecommercials.yml", // switch to *-API #8682
                 "Definitions/skytorrents.yml",
                 "Definitions/skytorrents-lol.yml",
                 "Definitions/skytorrents-to.yml",
@@ -454,6 +463,7 @@ namespace Jackett.Updater
                 "Definitions/tenyardtracker.yml", // to be migrated to c#, #795
                 "Definitions/tbplus.yml",
                 "Definitions/tehconnection.yml",
+                "Definitions/tellytorrent.yml", // switch to *-API #8682
                 "Definitions/tfile.yml",
                 "Definitions/the-madhouse.yml",
                 "Definitions/themoviecave.yml",

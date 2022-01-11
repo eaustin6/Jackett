@@ -104,7 +104,6 @@ A third-party Golang SDK for Jackett is available from [webtor-io/go-jackett](ht
  * NNTT
  * NoNaMe Club (NNM-Club)
  * Nyaa.si
- * OnceSearch
  * OneJAV
  * OpenSharing
  * OxTorrent
@@ -181,6 +180,7 @@ A third-party Golang SDK for Jackett is available from [webtor-io/go-jackett](ht
 
 <details> <summary> <b> Supported Semi-Private Trackers </b> </summary>
 
+ * 720pier
  * AniDUB
  * Anime-Free
  * AnimeLayer
@@ -246,7 +246,6 @@ A third-party Golang SDK for Jackett is available from [webtor-io/go-jackett](ht
  * 3D Torrents (3DT) [![(invite needed)][inviteneeded]](#)
  * 4thD (4th Dimension)
  * 52PT
- * 720pier
  * Abnormal
  * ABtorrents (ABT + RNS)
  * Acid Lounge (A-L)
@@ -254,6 +253,7 @@ A third-party Golang SDK for Jackett is available from [webtor-io/go-jackett](ht
  * Aftershock
  * Aidoru!Online
  * Aither
+ * Alleen Retail
  * AlphaRatio (AR)
  * AmigosShareClub
  * anasch.cc
@@ -401,7 +401,7 @@ A third-party Golang SDK for Jackett is available from [webtor-io/go-jackett](ht
  * Il Corsaro Verde
  * Indietorrents [![(invite needed)][inviteneeded]](#)
  * IPTorrents (IPT)
- * ImmortalSeed (iS) [![(invite needed)][inviteneeded]](#)
+ * ImmortalSeed (iS)
  * Immortuos [![(invite needed)][inviteneeded]](#)
  * Insane Tracker
  * IPTorrents (IPT)
@@ -427,6 +427,7 @@ A third-party Golang SDK for Jackett is available from [webtor-io/go-jackett](ht
  * magic-heaven
  * Magico (Trellas) [![(invite needed)][inviteneeded]](#)
  * Majomparádé (TurkDepo)
+ * MediaMaatjes
  * MegamixTracker
  * MeseVilág (Fairytale World)
  * MicroBit (µBit)
@@ -489,7 +490,7 @@ A third-party Golang SDK for Jackett is available from [webtor-io/go-jackett](ht
  * RacingForMe (RFM)
  * RedBits
  * Red Star Torrent (RST) [![(invite needed)][inviteneeded]](#)
- * Redacted (PassTheHeadphones) [![(invite needed)][inviteneeded]](#)
+ * Redacted (PassTheHeadphones)
  * Resurrect The Net
  * RetroFlix
  * RevolutionTT
@@ -573,6 +574,7 @@ A third-party Golang SDK for Jackett is available from [webtor-io/go-jackett](ht
  * TurkSeed
  * TurkTorrent (TT)
  * TV Chaos UK (TVCUK)
+ * TvRoad
  * TVstore
  * Twilight Torrents
  * Twilights Zoom
@@ -776,6 +778,7 @@ For these cases, [FlareSolverr](https://github.com/FlareSolverr/FlareSolverr) ha
 Setting up this service is optional, most indexers don't need it.
 * Install FlareSolverr service (following their instructions)
 * Configure **FlareSolverr API URL** in Jackett. For example: http://172.17.0.2:8191
+* It is recommended to keep the default value in **FlareSolverr Max Timeout (ms)**
 
 ## Configuring OMDb
 This feature is used as a fallback (when using the aggregate Indexer) to get the movie/series title if only the IMDB ID is provided in the request.
