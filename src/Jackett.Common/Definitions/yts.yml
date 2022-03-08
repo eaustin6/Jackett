@@ -9,7 +9,7 @@ requestDelay: 2.5 # 2.5 requests per second (2 causes problems)
 links:
   # dont forget to update the details, download and poster replace args
   - https://yts.mx/
-  - https://yts.unblockit.how/
+  - https://yts.unblockit.cam/
   - https://yts.unblockninja.com/
   - https://yts.nocensor.biz/
 legacylinks:
@@ -32,6 +32,7 @@ legacylinks:
   - https://yts.unblockit.kim/
   - https://yts.unblockit.bz/
   - https://yts.unblockit.tv/
+  - https://yts.unblockit.how/
 
 caps:
   categorymappings:
@@ -53,8 +54,7 @@ search:
     - path: api/v2/list_movies.json
       response:
         type: json
-        attribute: torrents
-        multiple: true
+
   inputs:
     # ignore ' (e.g. search for america's Next Top Model)
     query_term: "{{ if .Query.IMDBID }}{{ .Query.IMDBID }}{{ else }}{{ re_replace .Keywords \"[']\" \"\" }}{{ end }}"
@@ -64,6 +64,10 @@ search:
 
   rows:
     selector: data.movies
+    attribute: torrents
+    multiple: true
+    # bug at YTS can return movie_count > 0 and no movie torrents #12598
+    missingAttributeEquals0Results: true
     count:
       selector: data.movie_count
 

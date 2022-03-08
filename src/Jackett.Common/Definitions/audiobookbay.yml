@@ -6,10 +6,10 @@ language: en-US
 type: public
 encoding: UTF-8
 links:
-  - http://audiobookbay.nl/ # site forces http, does not support https
-  - http://audiobookbay.ws/
+  - http://audiobookbay.fi/ # site forces http, does not support https
+  - http://audiobookbay.se/
   - http://audiobookbayabb.com/
-  - https://audiobookbay.unblockit.how/
+  - https://audiobookbay.unblockit.cam/
 legacylinks:
   - https://audiobookbay.la/
   - https://audiobookbay.unblockit.lat/
@@ -28,6 +28,9 @@ legacylinks:
   - https://audiobookbay.unblockit.kim/
   - https://audiobookbay.unblockit.bz/
   - https://audiobookbay.unblockit.tv/
+  - http://audiobookbay.nl/
+  - http://audiobookbay.ws/
+  - https://audiobookbay.unblockit.how/
 
 caps:
   categorymappings:

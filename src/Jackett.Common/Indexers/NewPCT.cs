@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Jackett.Common.Utils.Clients;
 using Newtonsoft.Json.Linq;
 using NLog;
 using static Jackett.Common.Models.IndexerConfig.ConfigurationData;
+using WebClient = Jackett.Common.Utils.Clients.WebClient;
 
 namespace Jackett.Common.Indexers
 {
@@ -53,12 +55,6 @@ namespace Jackett.Common.Indexers
             public override object Clone() => new NewpctRelease(this);
         }
 
-        private class DownloadMatcher
-        {
-            public Regex MatchRegex;
-            public MatchEvaluator MatchEvaluator;
-        }
-
         private readonly char[] _wordSeparators = { ' ', '.', ',', ';', '(', ')', '[', ']', '-', '_' };
         private readonly int _wordNotFoundScore = 100000;
         private readonly Regex _searchStringRegex = new Regex(@"(.+?)S(\d{2})(E(\d{2}))?$", RegexOptions.IgnoreCase);
@@ -67,20 +63,7 @@ namespace Jackett.Common.Indexers
         // Love 101 - Temp. 1 Capitulos 1 al 8
         private readonly Regex _seriesChaptersTitleRegex = new Regex(@"(.+)Temp. (\d+) Capitulos (\d+) al (\d+)", RegexOptions.IgnoreCase);
         private readonly Regex _titleYearRegex = new Regex(@" *[\[\(]? *((19|20)\d{2}) *[\]\)]? *$");
-        private readonly DownloadMatcher[] _downloadMatchers =
-        {
-            new DownloadMatcher
-            {
-                MatchRegex = new Regex("(/descargar-torrent/[^\"]+)\"")
-            },
-            new DownloadMatcher
-            {
-                MatchRegex = new Regex(@"window\.location\.href\s*=\s*""([^""]+)"""),
-                MatchEvaluator = m => $"https:{m.Groups[1]}"
-            }
-        };
 
-        private readonly int _maxDailyPages = 1;
         private readonly int _maxMoviesPages = 6;
         private readonly int[] _allTvCategories = (new[] { TorznabCatType.TV }).Concat(TorznabCatType.TV.SubCategories).Select(c => c.ID).ToArray();
         private readonly int[] _allMoviesCategories = (new[] { TorznabCatType.Movies }).Concat(TorznabCatType.Movies.SubCategories).Select(c => c.ID).ToArray();
@@ -92,15 +75,15 @@ namespace Jackett.Common.Indexers
         private DateTime _dailyNow;
         private int _dailyResultIdx;
 
-        private readonly string _dailyUrl = "ultimas-descargas/pg/{0}";
+        private readonly string _dailyUrl = "ultimas-descargas/";
         private readonly string _searchJsonUrl = "get/result/";
         private readonly string[] _seriesLetterUrls = { "series/letter/{0}", "series-hd/letter/{0}" };
         private readonly string[] _seriesVoLetterUrls = { "series-vo/letter/{0}" };
         private readonly string[] _voUrls = { "serie-vo", "serievo" };
 
         public override string[] AlternativeSiteLinks { get; protected set; } = {
-            "https://atomixhq.net/",
-            "https://pctmix1.unblockit.how/"
+            "https://atomixhq.link/",
+            "https://pctmix1.unblockit.cam/"
         };
 
         public override string[] LegacySiteLinks { get; protected set; } = {
@@ -123,7 +106,11 @@ namespace Jackett.Common.Indexers
             "https://atomixhq.com/",
             "https://pctmix1.unblockit.bz/",
             "https://atomixhq.one/",
-            "https://pctmix1.unblockit.tv/"
+            "https://pctmix1.unblockit.tv/",
+            "https://atomixhq.top/",
+            "https://pctmix1.unblockit.how/",
+            "https://atomixhq.art/",
+            "https://atomixhq.net/"
         };
 
         public NewPCT(IIndexerConfigurationService configService, WebClient wc, Logger l, IProtectionService ps,
@@ -131,7 +118,7 @@ namespace Jackett.Common.Indexers
             : base(id: "newpct",
                    name: "NewPCT",
                    description: "NewPCT - Descargar peliculas, series y estrenos torrent gratis",
-                   link: "https://atomixhq.net/",
+                   link: "https://atomixhq.link/",
                    caps: new TorznabCapabilities
                    {
                        TvSearchParams = new List<TvSearchParam>
@@ -187,44 +174,32 @@ namespace Jackett.Common.Indexers
 
         public override async Task<byte[]> Download(Uri linkParam)
         {
+            Uri uriLink = null;
             var downloadLink = linkParam.AbsoluteUri.Replace("/descargar/", "/descargar/torrent/");
+            var downloadHost = "https://atomtt.com/";
+            var result = await RequestWithCookiesAndRetryAsync(downloadLink, referer: linkParam.AbsoluteUri);
 
-            var results = await RequestWithCookiesAndRetryAsync(downloadLink);
-            var uriLink = ExtractDownloadUri(results.ContentString, downloadLink);
+            var downloadRegex = new Regex("/t_download/([0-9]+)/");
+            var match = downloadRegex.Match(result.ContentString);
+            if (match.Success)
+            {
+                string downloadUrl = downloadHost + "to.php";
+                var headers = new Dictionary<string, string>
+                {
+                    {"X-Requested-With", "XMLHttpRequest"},
+                    {"Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"}
+                };
+                var body = "t=" + match.Groups[1].Value;
+                result = await RequestWithCookiesAsync(downloadUrl, method: RequestType.POST, rawbody: body,
+                                                       headers: headers, referer: downloadLink);
+                if (result.Status == HttpStatusCode.OK)
+                    uriLink = new Uri(new Uri(SiteLink), result.ContentString);
+            }
+
             if (uriLink == null)
                 throw new Exception("Download link not found!");
 
-            return await base.Download(uriLink);
-        }
-
-        private Uri ExtractDownloadUri(string content, string baseLink)
-        {
-            foreach (var matcher in _downloadMatchers)
-            {
-                var match = matcher.MatchRegex.Match(content);
-                if (match.Success)
-                {
-                    string linkText;
-
-                    if (matcher.MatchEvaluator != null)
-                        linkText = (string)matcher.MatchEvaluator.DynamicInvoke(match);
-                    else
-                        linkText = match.Groups[1].Value;
-
-                    // take the details page link and the download page link and build a Torrent link
-                    // Details page: https://atomixhq.com/descargar/torrent/peliculas-x264-mkv/el-viaje-i-onde-dager--2021-/bluray-microhd/
-                    // Download page: https://atomtt.com/download/159843_-1634325135-El-viaje--I-onde-dager---2021---BluRay-MicroHD/
-                    // Torrent link: https://atomixhq.com/download/159843_-1634325135-El-viaje--I-onde-dager---2021---BluRay-MicroHD.torrent
-                    linkText = linkText.Remove(linkText.Length - 1, 1) + ".torrent";
-                    var linkHost = new Uri(linkText).Host;
-                    var linkBase = new Uri(baseLink).Host;
-                    var downloadLink = linkText.Replace(linkHost.ToString(), linkBase.ToString());
-
-                    return new Uri(downloadLink);
-                }
-            }
-
-            return null;
+            return await base.Download(uriLink, RequestType.GET, downloadHost);
         }
 
         protected override async Task<IEnumerable<ReleaseInfo>> PerformQuery(TorznabQuery query)
@@ -241,21 +216,9 @@ namespace Jackett.Common.Indexers
 
             if (rssMode)
             {
-                var pg = 1;
-                while (pg <= _maxDailyPages)
-                {
-                    var pageUrl = SiteLink + string.Format(_dailyUrl, pg);
-                    var results = await RequestWithCookiesAndRetryAsync(pageUrl);
-                    if (results == null || string.IsNullOrEmpty(results.ContentString))
-                        break;
-
-                    var items = ParseDailyContent(results.ContentString);
-                    if (items == null || !items.Any())
-                        break;
-
-                    releases.AddRange(items);
-                    pg++;
-                }
+                var results = await RequestWithCookiesAndRetryAsync(SiteLink + _dailyUrl, referer: SiteLink);
+                var items = ParseDailyContent(results.ContentString);
+                releases.AddRange(items);
             }
             else
             {
@@ -338,13 +301,13 @@ namespace Jackett.Common.Indexers
             var releases = new List<ReleaseInfo>();
 
             // Episodes list
-            var results = await RequestWithCookiesAndRetryAsync(uri.AbsoluteUri);
+            var results = await RequestWithCookiesAndRetryAsync(uri.AbsoluteUri, referer: uri.AbsoluteUri);
             var seriesEpisodesUrl = ParseSeriesListContent(results.ContentString, seriesName);
 
             // TV serie list
             if (!string.IsNullOrEmpty(seriesEpisodesUrl))
             {
-                results = await RequestWithCookiesAndRetryAsync(seriesEpisodesUrl);
+                results = await RequestWithCookiesAndRetryAsync(seriesEpisodesUrl, referer: seriesEpisodesUrl);
                 var items = ParseEpisodesListContent(results.ContentString);
                 if (items != null && items.Any())
                     releases.AddRange(items);
@@ -498,7 +461,7 @@ namespace Jackett.Common.Indexers
                     {"pg", pg.ToString()}
                 };
 
-                var results = await RequestWithCookiesAsync(searchJsonUrl, method: RequestType.POST, data: queryCollection);
+                var results = await RequestWithCookiesAsync(searchJsonUrl, method: RequestType.POST, data: queryCollection, referer: SiteLink);
                 var items = ParseSearchJsonContent(results.ContentString, year);
                 if (!items.Any())
                     break;
@@ -540,7 +503,8 @@ namespace Jackett.Common.Indexers
 
                     // we have another search for series
                     var titleLower = title.ToLower();
-                    var isSeries = quality != null && quality.ToLower().Contains("hdtv");
+                    var isSeries = (quality != null && quality.ToLower().Contains("hdtv")) ||
+                                   detailsUrl.Contains("/serie-") || detailsUrl.Contains("/series/");
                     var isGame = titleLower.Contains("pcdvd");
                     if (isSeries || isGame)
                         continue;

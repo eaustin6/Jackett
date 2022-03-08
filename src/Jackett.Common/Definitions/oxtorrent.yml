@@ -7,8 +7,8 @@ type: public
 encoding: UTF-8
 followredirect: true
 links:
-  - https://www.oxtorrent.be/
-  - https://oxtorrent.unblockit.how/
+  - https://www.oxtorrent.re/
+  - https://oxtorrent.unblockit.cam/
   - https://oxtorrent.nocensor.biz/
 legacylinks:
   - https://www.oxtorrent.bz/
@@ -17,7 +17,6 @@ legacylinks:
   - https://www.oxtorrent.ph/
   - https://www.oxtorrent.pe/
   - https://www.oxtorrent.co/
-  - https://oxtorrent.unblockit.uno/
   - https://www.oxtorrent.io/
   - https://oxtorrent.unblockit.ch/
   - https://oxtorrent.nocensor.space/
@@ -31,6 +30,8 @@ legacylinks:
   - https://oxtorrent.unblockit.bz/
   - https://www.oxtorrent.vc/
   - https://oxtorrent.unblockit.tv/
+  - https://oxtorrent.unblockit.how/
+  - https://www.oxtorrent.be/
 
 caps:
   categorymappings:
@@ -73,6 +74,8 @@ settings:
 
 download:
   selectors:
+    - selector: a[href^="magnet:?"]
+      attribute: href
     - selector: script:contains("magnet:?")
       filters:
         - name: regexp

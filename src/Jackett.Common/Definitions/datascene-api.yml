@@ -12,9 +12,8 @@ legacylinks:
   - https://datascene.net/
 
 caps:
-  # dont forget to update the case block in the search fields category
   categorymappings:
-    - {id: 1, cat: Movies, desc: "Movies"}
+    - {id: 1, cat: Movies, desc: "Movie"}
     - {id: 2, cat: TV, desc: "TV"}
     - {id: 3, cat: Audio, desc: "Music"}
     - {id: 4, cat: PC/Games, desc: "Game"}
@@ -59,6 +58,16 @@ settings:
       desc: desc
       asc: asc
 
+login:
+  path: /api/torrents
+  method: get
+  inputs:
+    api_token: "{{ .Config.apikey }}"
+  error:
+    - selector: a[href*="/login"]
+      message:
+        text: "The API key was not accepted by {{ .Config.sitelink }}."
+
 search:
   paths:
     # https://hdinnovations.github.io/UNIT3D-Community-Edition-Docs/api_endpoints.html
@@ -66,25 +75,16 @@ search:
     - path: "/api/torrents/filter?api_token={{ .Config.apikey }}&name={{ if .Query.IMDBID }}{{ else }}{{ .Keywords }}{{ end }}{{ if .Query.TMDBID }}&tmdbId={{ .Query.TMDBID }}{{ else }}{{ end }}{{ if .Query.IMDBIDShort }}&imdbId={{ .Query.IMDBIDShort }}{{ else }}{{ end }}{{ if  .Query.TVDBID }}&tvdbId={{ .Query.TVDBID }}{{ else }}{{ end }}&sortField={{ .Config.sort }}&sortDirection={{ .Config.type }}&perPage=100&page=1{{ range .Categories }}&categories[]={{.}}{{end}}{{ if .Config.freeleech }}&free=1{{ else }}{{ end }}"
       response:
         type: json
-        attribute: attributes
 
   rows:
     selector: data
+    attribute: attributes
     count:
       selector: meta.total
 
   fields:
-    category:
+    categorydesc:
       selector: category
-      case:
-        "Movie": 1
-        "TV": 2
-        "Music": 3
-        "Game": 4
-        "Application": 5
-        "XXX": 6
-        "Mobile": 7
-        "E-Book": 8
     title:
       selector: name
     details:
@@ -96,8 +96,6 @@ search:
       filters:
         - name: replace
           args: ["https://via.placeholder.com/90x135", ""]
-        - name: replace
-          args: ["https://via.placeholder.com/400x600", ""]
     imdbid:
       selector: imdb_id
     tmdbid:

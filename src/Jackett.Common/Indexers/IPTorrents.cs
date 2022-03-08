@@ -49,7 +49,7 @@ namespace Jackett.Common.Indexers
             "https://iptorrents.eu/"
         };
 
-        private new ConfigurationDataCookie configData => (ConfigurationDataCookie)base.configData;
+        private new ConfigurationDataCookieUA configData => (ConfigurationDataCookieUA)base.configData;
 
         public IPTorrents(IIndexerConfigurationService configService, WebClient wc, Logger l, IProtectionService ps,
             ICacheService cs)
@@ -81,11 +81,21 @@ namespace Jackett.Common.Indexers
                    logger: l,
                    p: ps,
                    cacheService: cs,
-                   configData: new ConfigurationDataCookie("For best results, change the 'Torrents per page' option to 100 and check the 'Torrents - Show files count' option in the website Settings."))
+                   configData: new ConfigurationDataCookieUA("For best results, change the 'Torrents per page' option to 100 and check the 'Torrents - Show files count' option in the website Settings."))
         {
             Encoding = Encoding.UTF8;
             Language = "en-US";
             Type = "private";
+
+            var sort = new ConfigurationData.SingleSelectConfigurationItem("Sort requested from site", new Dictionary<string, string>
+                {
+                    {"time", "created"},
+                    {"size", "size"},
+                    {"seeders", "seeders"},
+                    {"name", "title"}
+                })
+            { Value = "time" };
+            configData.AddDynamic("sort", sort);
 
             configData.AddDynamic("freeleech", new BoolConfigurationItem("Search freeleech only") { Value = false });
 
@@ -167,6 +177,7 @@ namespace Jackett.Common.Indexers
             LoadValuesFromJson(configJson);
 
             CookieHeader = configData.Cookie.Value;
+
             try
             {
                 var results = await PerformQuery(new TorznabQuery());
@@ -180,7 +191,7 @@ namespace Jackett.Common.Indexers
             catch (Exception e)
             {
                 IsConfigured = false;
-                throw new Exception("Your cookie did not work: " + e.Message);
+                throw new Exception("Your cookie did not work, make sure the user agent matches your computer: " + e.Message);
             }
         }
 
@@ -189,6 +200,15 @@ namespace Jackett.Common.Indexers
             var releases = new List<ReleaseInfo>();
 
             var qc = new NameValueCollection();
+
+
+            Dictionary<string, string> headers = null;
+
+            if (!string.IsNullOrEmpty(configData.UserAgent.Value))
+            {
+                headers = new Dictionary<string, string>();
+                headers.Add("User-Agent", configData.UserAgent.Value);
+            }
 
             if (query.IsImdbQuery)
                 qc.Add("q", query.ImdbID);
@@ -201,8 +221,10 @@ namespace Jackett.Common.Indexers
             if (((BoolConfigurationItem)configData.GetDynamic("freeleech")).Value)
                 qc.Add("free", "on");
 
+            qc.Add("o", ((SingleSelectConfigurationItem)configData.GetDynamic("sort")).Value);
+
             var searchUrl = SearchUrl + "?" + qc.GetQueryString();
-            var response = await RequestWithCookiesAndRetryAsync(searchUrl, referer: SearchUrl);
+            var response = await RequestWithCookiesAndRetryAsync(searchUrl, referer: SearchUrl, headers: headers);
             var results = response.ContentString;
 
             if (results == null || !results.Contains("/lout.php"))
